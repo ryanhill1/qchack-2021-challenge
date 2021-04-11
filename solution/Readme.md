@@ -11,4 +11,3 @@ Papers referenced for the solution:
 [1] Decomposition of unitary matrices and quantum gates -Chi-Kwong Li, Rebecca Roberts, Xiaoyan Yin
 [2] Efficient decomposition of unitary matrices in quantum circuit compilers A. M. Krol§, A. Sarkar§, I. Ashraf¶, Z. Al-Ars§, K. Bertels‡
 
-"""
