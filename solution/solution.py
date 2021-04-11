@@ -8,10 +8,11 @@ Team members:
 - Mathias Goncalves
 - Vishal Sharathchandra Bajpe @mrvee-qC
 
-Paper referenced for the solution:
-[1] Decomposition of unitary matrices and quantum gates Chi-Kwong Li, Rebecca Roberts, Xiaoyan Yin
+Papers referenced for the solution:
+[1] Decomposition of unitary matrices and quantum gates C.K. Li, R. Roberts, X. Yin, 2013.
+[3] Decomposition of unitary matrix into quantum gates D. Fedoriaka, 2019.
 [2] Efficient decomposition of unitary matrices in quantum circuit compilers A. M. Krol, A. Sarkar, I. Ashraf,
-Z. Al-Ars, K. Bertels
+Z. Al-Ars, K. Bertels, 2021.
 
 """
 from typing import List, Tuple
@@ -36,43 +37,43 @@ def is_power_of_two(x):
     return (x & (x - 1)) == 0 and x != 0
 
 
-def permute_matrix(A, perm):
-    """Returns list of permulations perm applied to matrix A
+def permute_matrix(m, perm):
+    """Returns list of permutations perm applied to matrix A
 
     Args:
-        A: Matrix to be permuted
-        perm: Permulations to be applied
+        m: Matrix to be permuted
+        perm: Permutations to be applied
 
     Returns:
         A: Matrix list with permutations applied
 
     """
-    A = np.array(A)
-    A[:, :] = A[:, perm]
-    A[:, :] = A[perm, :]
-    return A
+    m = np.array(m)
+    m[:, :] = m[:, perm]
+    m[:, :] = m[perm, :]
+    return m
 
 
-def two_level_decompose(A):
+def two_level_decompose(m):
     """Decomposes a unitary matrix into two level operations, if possible and returns list of decomposed unitary
     matrices with indexing.
 
     Args:
-        A: Matrix to be decomposed
+        m: Matrix to be decomposed
 
     Returns:
         result: Returns list of decomposed unitary matrices
         idx: Returns the matrix indexes
 
      Raises:
-        AssetionError:
-            Matrix A is not a unitary matrix
+        AssertionError:
+            Matrix m is not a unitary matrix
 
     """
 
-    assert cirq.is_unitary(A)
-    n = A.shape[0]
-    A = np.array(A, dtype=np.complex128)
+    assert cirq.is_unitary(m)
+    n = m.shape[0]
+    A = np.array(m, dtype=np.complex128)
 
     result = []
     idxs = []
@@ -111,32 +112,32 @@ def two_level_decompose(A):
     return result, idxs
 
 
-def two_level_decompose_gray(A):
+def two_level_decompose_gray(m):
     """Decomposes a unitary matrix into two level operations, if possible and returns list matrices which multiply to
     A with indexing.
 
     Args:
-        A: Matrix to be decomposed
+        m: Matrix to be decomposed
 
     Returns:
         result: Returns list of decomposed matrices (single bit acting)
         idx: Returns the matrix indexes
 
     Raises:
-        AssetionError:
-            Matrix A must be a power of 2
-            Matrix A must be a square matrix
-            Matrix A is not a unitary matrix
+        AssertionError:
+            Matrix m must be a power of 2
+            Matrix m must be a square matrix
+            Matrix m is not a unitary matrix
 
     """
 
-    N = A.shape[0]
-    assert is_power_of_two(N)
-    assert A.shape == (N, N), "Matrix must be square."
-    assert cirq.is_unitary(A)
+    n = m.shape[0]
+    assert is_power_of_two(n)
+    assert m.shape == (n, n), "Matrix must be square."
+    assert cirq.is_unitary(m)
 
-    perm = [x ^ (x // 2) for x in range(N)]  # Gray code.
-    result, idxs = two_level_decompose(permute_matrix(A, perm))
+    perm = [x ^ (x // 2) for x in range(n)]  # Gray code.
+    result, idxs = two_level_decompose(permute_matrix(m, perm))
     for i in range(len(idxs)):
         index1, index2 = idxs[i]
         idxs[i] = perm[index1], perm[index2]
@@ -144,24 +145,24 @@ def two_level_decompose_gray(A):
     return result, idxs
 
 
-def su_to_gates(A):
+def su_to_gates(m):
     """Decomposes two level special unitaries to Ry and Rz gates
 
     Args:
-        A: Matrix to be converted into gates
+        m: Matrix to be converted into gates
 
     Returns:
         result: Returns list of gates to be applied
 
     Raises:
-        AssetionError:
-            Matrix A is not a special unitary matrix
+        AssertionError:
+            Matrix m is not a special unitary matrix
 
     """
-    assert cirq.is_special_unitary(A)
+    assert cirq.is_special_unitary(m)
 
-    u00 = A[0, 0]
-    u01 = A[0, 1]
+    u00 = m[0, 0]
+    u01 = m[0, 1]
     theta = np.arccos(np.abs(u00))
     lmbda = np.angle(u00)
     mu = np.angle(u01)
@@ -177,38 +178,38 @@ def su_to_gates(A):
     return result
 
 
-def unitary2x2_to_gates(A):
+def unitary2x2_to_gates(m):
     """Decomposes a two level unitary to Ry, Rz and R1 gates
 
     Args:
-        A: Matrix to be converted into gates
+        m: Matrix to be converted into gates
 
     Returns:
         result: Returns result (list of gates to be applied from function su_to_gates) with additional R1 gates
 
     Raises:
-        AssetionError:
-            Matrix A is not a unitary matrix
+        AssertionError:
+            Matrix m is not a unitary matrix
 
     """
 
-    assert cirq.is_unitary(A)
-    phi = np.angle(np.linalg.det(A))
+    assert cirq.is_unitary(m)
+    phi = np.angle(np.linalg.det(m))
     if np.abs(phi) < 1e-9:
-        return su_to_gates(A)
-    elif np.allclose(A, np.array([[0, 1], [1, 0]], dtype=np.complex128)):
+        return su_to_gates(m)
+    elif np.allclose(m, np.array([[0, 1], [1, 0]], dtype=np.complex128)):
         return [('X', 'n/a')]
     else:
-        A = np.diag([1.0, np.exp(-1j * phi)]) @ A
-        return su_to_gates(A) + [('R1', phi)]
+        m = np.diag([1.0, np.exp(-1j * phi)]) @ m
+        return su_to_gates(m) + [('R1', phi)]
 
 
 def add_flips(flip_mask, gates):
-    """Decomposes a two level unitary to Ry, Rz and R1 gates
+    """Adds X gates for all qubits specified by qubit_mask.
 
     Args:
-        gates:
-        flip_mask:
+        gates: list of quantum gates to be applied
+        flip_mask: int mask indicating whether qubit flip (X gate) is needed
 
     Returns:
         --
@@ -223,23 +224,23 @@ def add_flips(flip_mask, gates):
         qubit_id += 1
 
 
-def matrix_to_gates(A):
+def matrix_to_gates(m):
     """ Returns list of gate sequences equivalent to the action of input matrix on respective qubit registers
 
     Args:
-        A: Matrix to be converted into gate sequences (must be of the form 2^N * 2^N)
+        m: Matrix to be converted into gate sequences (must be of the form 2^N * 2^N)
 
     Returns:
         gates: Returns sequence of gates as a list to be applied on a particular qubit
 
     Raises:
-        AssetionError:
-            Matrix A is not a unitary matrix
-            Matrix A does not have dimenstions of the order of 2^N
+        AssertionError:
+            Matrix m is not a unitary matrix
+            Matrix m does not have dimensions of the order of 2^N
 
     """
 
-    matrices, idxs = two_level_decompose_gray(A)
+    matrices, idxs = two_level_decompose_gray(m)
 
     gates = []
     prev_flip_mask = 0
@@ -249,7 +250,7 @@ def matrix_to_gates(A):
         assert is_power_of_two(qubit_id_mask)
         qubit_id = int(math.log2(qubit_id_mask))
 
-        flip_mask = (A.shape[0] - 1) - index2
+        flip_mask = (m.shape[0] - 1) - index2
 
         add_flips(flip_mask ^ prev_flip_mask, gates)
         for gate2 in unitary2x2_to_gates(matrices[i]):
@@ -264,7 +265,7 @@ def gate_to_cirq(gate1):
     """Converts list of gate sequences to its cirq analogue
 
     Args:
-        gate1: Sequence of gate to be transcripted
+        gate1: Sequence of gate to be transcribed
 
     Returns:
         --
@@ -286,26 +287,26 @@ def gate_to_cirq(gate1):
         raise RuntimeError("Can't implement: %s" % gate1)
 
 
-def matrix_to_cirq_circuit(A, qubits):
+def matrix_to_cirq_circuit(m, qubits):
     """Converts unitary matrix to a cirq.circuit.Circuit list
 
     Args:
-        A: Unitary matrix to be converted
+        m: Unitary matrix to be converted
         qubits: Target qubits specified to be acted on
 
     Returns:
         circuit: A mutable list of groups of operations to apply to some qubits.
 
     Raises:
-        AssetionError:
-            Matrix A is not a unitary matrix
+        AssertionError:
+            Matrix m is not a unitary matrix
 
         RuntimeError: Gate value passed cannot be implemented by cirq library
 
     """
 
-    gates = matrix_to_gates(A)
-    qubits_count = int(np.log2(A.shape[0]))
+    gates = matrix_to_gates(m)
+    qubits_count = int(np.log2(m.shape[0]))
     circuit = cirq.Circuit()
     operations = []
 
@@ -332,7 +333,6 @@ def matrix_to_cirq_circuit(A, qubits):
             operations.append(ops)
         else:
             raise RuntimeError('Unknown gate type.')
-        # This is not part of the code
 
     return circuit, operations
 
