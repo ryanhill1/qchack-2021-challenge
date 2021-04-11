@@ -8,8 +8,8 @@ Team members:
 - Vishal Sharathchandra Bajpe @mrvee-qC 
 
 Papers referenced for the solution:
-[1] Decomposition of unitary matrices and quantum gates C.K. Li, R. Roberts, X. Yin, 2013.
-[2] Decomposition of unitary matrix into quantum gates D. Fedoriaka, 2019.
+[1] Decomposition of unitary matrices and quantum gates C.K. Li, R. Roberts, X. Yin, 2013.\n
+[2] Decomposition of unitary matrix into quantum gates D. Fedoriaka, 2019. \n
 [3] Efficient decomposition of unitary matrices in quantum circuit compilers A. M. Krol, A. Sarkar, I. Ashraf,
 Z. Al-Ars, K. Bertels, 2021.
 
