@@ -1,4 +1,4 @@
-# QCHACK 2021 | Stanford x Yale 
+# Qchack 2021 Google Challenge | Stanford x Yale 
 
 This is a submission from Team 33 for the Google Cirq Challenge at QC Hack 2021 by Stanford and Yale University
 
