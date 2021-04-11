@@ -5,7 +5,7 @@ This is a submission from Team 33 for the Google Challenge at QC Hack 2021 by St
 
 Team members:
 - Ryan hill @ryanhill1
-- Mathias Goncalves
+- Mathias Goncalves @mtgo007
 - Vishal Sharathchandra Bajpe @mrvee-qC
 
 Papers referenced for the solution:
